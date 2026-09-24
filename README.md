@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Forever In Frame: expo QR sign-up
 
-## Getting Started
+A mobile-first Next.js + shadcn/ui form that couples reach by scanning a QR code.
+When they submit:
 
-First, run the development server:
+1. **Lead created in VSCO Workspace (Táve).** One transactional request creates the
+   job with both partners as clients, the wedding date, a "Wedding" calendar event,
+   job type, brand, lead source and lead status. The job is tagged as an expo lead.
+2. **Quote attached.** The package options come from a template quote in VSCO
+   (`VSCO_TEMPLATE_QUOTE_IDS`). The couple's quote is a copy of the option they
+   picked, with your intro text, line items, prices and optional extras.
+3. **Quote emailed that night through VSCO.** A nightly job at 8pm Brisbane time
+   sends each new expo quote with your Quote Invite email template, from the
+   mailbox connected to VSCO. Sends show up in the job's mail history. VSCO blocks
+   a second send, so a quote is never emailed twice.
+
+## Setup
 
 ```bash
+npm install
+cp .env.example .env.local     # then fill it in
+npm run vsco:setup             # lists brands, job types, lead sources, event types and quotes
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Before the nightly email can send, set a sender for the brand in VSCO under
+**Settings › Mail Settings › Default From Addresses**. Without it, VSCO returns
+"No active mail sender is configured for this studio/brand."
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To see what tonight's run would send without sending anything:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" "http://localhost:3000/api/cron/send-quotes?dryRun=1"
+```
 
-## Learn More
+Leave out `?dryRun=1` to send for real.
 
-To learn more about Next.js, take a look at the following resources:
+## Changing packages
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Edit the template quote in VSCO, or point `VSCO_TEMPLATE_QUOTE_IDS` at a
+different quote. The form picks up changes within 5 minutes.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## QR codes
 
-## Deploy on Vercel
+Open `/qr?key=ADMIN_PASSWORD` on the deployed site. It shows one general code
+plus one code per package, which opens the form with that package selected.
+Tap a code to download a print-quality PNG. Set `NEXT_PUBLIC_SITE_URL` so the
+codes point at your real domain.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy to Vercel and add every variable from `.env.local` in the project
+settings, including `CRON_SECRET`. `vercel.json` schedules the nightly send at
+10:00 UTC, which is 8pm in Brisbane.

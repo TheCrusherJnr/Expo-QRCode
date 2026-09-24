@@ -1,0 +1,40 @@
+import "server-only";
+
+function optional(name: string, fallback = ""): string {
+  const value = process.env[name];
+  return value && value.trim() !== "" ? value.trim() : fallback;
+}
+
+function list(name: string): string[] {
+  return optional(name)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+export const config = {
+  studioName: optional("STUDIO_NAME", "Forever In Frame"),
+  websiteUrl: optional("WEBSITE_URL", "https://foreverinframe.com.au/"),
+  filmsUrl: optional("FILMS_URL", "https://foreverinframe.com.au/"),
+
+  vsco: {
+    apiKey: optional("VSCO_API_KEY"),
+    baseUrl: optional("VSCO_API_BASE_URL", "https://workspace.vsco.co/api/v2"),
+    // Quote(s) whose options are offered as packages on the form.
+    templateQuoteIds: list("VSCO_TEMPLATE_QUOTE_IDS"),
+    jobTypeId: optional("VSCO_JOB_TYPE_ID") || null,
+    leadSourceId: optional("VSCO_LEAD_SOURCE_ID") || null,
+    leadStatusId: optional("VSCO_LEAD_STATUS_ID") || null,
+    brandId: optional("VSCO_BRAND_ID") || null,
+    weddingEventTypeId: optional("VSCO_WEDDING_EVENT_TYPE_ID") || null,
+    // Optional: a specific VSCO email template for the nightly quote email.
+    quoteEmailTemplateId: optional("VSCO_QUOTE_EMAIL_TEMPLATE_ID") || null,
+  },
+
+  cronSecret: optional("CRON_SECRET"),
+  defaultCountry: optional("DEFAULT_PHONE_COUNTRY", "AU").toUpperCase(),
+  currency: optional("CURRENCY", "AUD"),
+  showPrices: optional("SHOW_PRICES", "true") === "true",
+  adminPassword: optional("ADMIN_PASSWORD"),
+  siteUrl: optional("NEXT_PUBLIC_SITE_URL"),
+};
