@@ -38,7 +38,8 @@ export default async function Home({
           Let&apos;s capture your wedding day
         </h1>
         <p className="mt-2 text-base text-muted-foreground text-pretty">
-          Pop in your details and we&apos;ll email your package tonight.
+          Pop in your details and we&apos;ll email your package{" "}
+          {config.sendImmediately ? "straight away" : "tonight"}.
         </p>
       </header>
 
@@ -58,6 +59,7 @@ export default async function Home({
           showPrices={config.showPrices}
           currency={config.currency}
           filmsUrl={config.filmsUrl}
+          sendImmediately={config.sendImmediately}
         />
       )}
 
