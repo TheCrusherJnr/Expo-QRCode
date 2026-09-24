@@ -330,6 +330,46 @@ function isExpoJob(job: Job) {
 }
 
 /**
+ * Emails a quote to the job's clients who have an email address, through VSCO's
+ * own mail system (your connected mailbox and Quote Invite template).
+ */
+export async function sendQuoteToClients(
+  jobId: string,
+  quoteId: string,
+  dryRun = false,
+): Promise<"sent" | "no-email"> {
+  // Only email clients who gave an address (the partner usually hasn't).
+  const jobContacts = await vsco<
+    Collection<{ contactId: string; client: boolean }>
+  >(`/job-contact?jobId=${jobId}&pageSize=50`);
+  const clients = await Promise.all(
+    jobContacts.items
+      .filter((c) => c.client)
+      .map((c) =>
+        vsco<{ id: string; email?: string | null }>(`/address-book/${c.contactId}`),
+      ),
+  );
+  const recipientContactIds = clients
+    .filter((c) => c.email)
+    .map((c) => c.id)
+    .slice(0, 5);
+  if (!recipientContactIds.length) return "no-email";
+  if (dryRun) return "sent";
+
+  await vsco(`/quote/${quoteId}/send`, {
+    method: "POST",
+    body: JSON.stringify({
+      resend: false,
+      recipientContactIds,
+      ...(config.vsco.quoteEmailTemplateId
+        ? { mailMessageTemplateId: config.vsco.quoteEmailTemplateId }
+        : {}),
+    }),
+  });
+  return "sent";
+}
+
+/**
  * Finds quotes created in the last `lookbackHours` on jobs made by this app and sends
  * each one with the studio's Quote Invite email template. VSCO refuses a second send
  * without `resend: true`, so running this more than once never double-emails.
@@ -372,38 +412,11 @@ export async function sendPendingQuotes(opts: {
     }
 
     try {
-      // Only email clients who gave an address (the partner usually hasn't).
-      const jobContacts = await vsco<
-        Collection<{ contactId: string; client: boolean }>
-      >(`/job-contact?jobId=${job.id}&pageSize=50`);
-      const clients = await Promise.all(
-        jobContacts.items
-          .filter((c) => c.client)
-          .map((c) => vsco<{ id: string; email?: string | null }>(`/address-book/${c.contactId}`)),
-      );
-      const recipientContactIds = clients
-        .filter((c) => c.email)
-        .map((c) => c.id)
-        .slice(0, 5);
-      if (!recipientContactIds.length) {
+      const result = await sendQuoteToClients(job.id, quote.id, opts.dryRun);
+      if (result === "no-email") {
         report.skipped.push({ quoteId: quote.id, reason: "no client email" });
         continue;
       }
-      if (opts.dryRun) {
-        report.sent.push({ quoteId: quote.id, jobId: job.id });
-        continue;
-      }
-
-      await vsco(`/quote/${quote.id}/send`, {
-        method: "POST",
-        body: JSON.stringify({
-          resend: false,
-          recipientContactIds,
-          ...(config.vsco.quoteEmailTemplateId
-            ? { mailMessageTemplateId: config.vsco.quoteEmailTemplateId }
-            : {}),
-        }),
-      });
       report.sent.push({ quoteId: quote.id, jobId: job.id });
     } catch (err) {
       report.failed.push({ quoteId: quote.id, error: errorText(err) });

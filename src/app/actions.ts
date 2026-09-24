@@ -4,7 +4,12 @@ import { headers } from "next/headers";
 import { parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 import { config } from "@/lib/config";
 import { inquirySchema, type InquiryInput } from "@/lib/schema";
-import { createWeddingLead, getPackages, VscoApiError } from "@/lib/vsco";
+import {
+  createWeddingLead,
+  getPackages,
+  sendQuoteToClients,
+  VscoApiError,
+} from "@/lib/vsco";
 
 export type SubmitResult =
   | { ok: true; firstName: string; packageName: string }
@@ -80,6 +85,19 @@ export async function submitInquiry(input: InquiryInput): Promise<SubmitResult> 
     });
 
     console.info("[inquiry] created", lead);
+
+    if (config.sendImmediately && lead.quoteId) {
+      try {
+        const result = await sendQuoteToClients(lead.jobId, lead.quoteId);
+        console.info("[inquiry] quote email", result);
+      } catch (err) {
+        // Not fatal: the nightly run will retry anything that didn't send.
+        console.error(
+          "[inquiry] immediate quote email failed",
+          err instanceof VscoApiError ? { status: err.status, body: err.body } : err,
+        );
+      }
+    }
     return { ok: true, firstName: data.firstName, packageName: pkg.name };
   } catch (err) {
     console.error(
