@@ -27,14 +27,15 @@ export const config = {
     leadStatusId: optional("VSCO_LEAD_STATUS_ID") || null,
     brandId: optional("VSCO_BRAND_ID") || null,
     weddingEventTypeId: optional("VSCO_WEDDING_EVENT_TYPE_ID") || null,
-    // Optional: a specific VSCO email template for the nightly quote email.
+    // Optional: a specific VSCO email template for the quote email (ULID).
     quoteEmailTemplateId: optional("VSCO_QUOTE_EMAIL_TEMPLATE_ID") || null,
   },
 
-  // true: email the quote the moment the form is submitted (handy for testing).
-  // false: wait for the nightly 8pm run.
-  sendImmediately: optional("SEND_QUOTE_IMMEDIATELY", "false") === "true",
-  cronSecret: optional("CRON_SECRET"),
+  // "draft": save the quote email as a draft in VSCO for you to review and send.
+  // "send": email it to the couple straight away.
+  quoteEmailMode: (optional("QUOTE_EMAIL_MODE", "draft") === "send" ? "send" : "draft") as
+    | "draft"
+    | "send",
   defaultCountry: optional("DEFAULT_PHONE_COUNTRY", "AU").toUpperCase(),
   currency: optional("CURRENCY", "AUD"),
   showPrices: optional("SHOW_PRICES", "true") === "true",

@@ -312,33 +312,21 @@ export async function createWeddingLead(input: {
 }
 
 // ---------------------------------------------------------------------------
-// Nightly send: emails each new expo quote through VSCO's own mail system
+// Quote email: drafted (or sent) through VSCO's own mail system
 
-export type SendReport = {
-  checked: number;
-  sent: Array<{ quoteId: string; jobId: string }>;
-  skipped: Array<{ quoteId: string; reason: string }>;
-  failed: Array<{ quoteId: string; error: string }>;
-};
-
-function isExpoJob(job: Job) {
-  return (
-    job.externalMappings?.some((m) => m.id.startsWith(EXPO_MARKER)) ||
-    job.leadNotes?.startsWith("Signed up via the expo QR code form") ||
-    false
-  );
-}
+export type QuoteEmailMode = "draft" | "send";
 
 /**
- * Emails a quote to the job's clients who have an email address, through VSCO's
- * own mail system (your connected mailbox and Quote Invite template).
+ * Creates the quote email for the job's clients who have an email address, using
+ * your default Quote Invite template and your connected mailbox.
+ * "draft" saves it in VSCO for you to review and send. "send" emails it right away.
  */
-export async function sendQuoteToClients(
+export async function emailQuoteToClients(
   jobId: string,
   quoteId: string,
-  dryRun = false,
-): Promise<"sent" | "no-email"> {
-  // Only email clients who gave an address (the partner usually hasn't).
+  mode: QuoteEmailMode,
+): Promise<"done" | "no-email"> {
+  // Only address clients who gave an email (the partner usually hasn't).
   const jobContacts = await vsco<
     Collection<{ contactId: string; client: boolean }>
   >(`/job-contact?jobId=${jobId}&pageSize=50`);
@@ -354,74 +342,17 @@ export async function sendQuoteToClients(
     .map((c) => c.id)
     .slice(0, 5);
   if (!recipientContactIds.length) return "no-email";
-  if (dryRun) return "sent";
 
   await vsco(`/quote/${quoteId}/send`, {
     method: "POST",
     body: JSON.stringify({
       resend: false,
+      draft: mode === "draft",
       recipientContactIds,
       ...(config.vsco.quoteEmailTemplateId
         ? { mailMessageTemplateId: config.vsco.quoteEmailTemplateId }
         : {}),
     }),
   });
-  return "sent";
-}
-
-/**
- * Finds quotes created in the last `lookbackHours` on jobs made by this app and sends
- * each one with the studio's Quote Invite email template. VSCO refuses a second send
- * without `resend: true`, so running this more than once never double-emails.
- */
-export async function sendPendingQuotes(opts: {
-  lookbackHours?: number;
-  dryRun?: boolean;
-} = {}): Promise<SendReport> {
-  const cutoff = Date.now() - (opts.lookbackHours ?? 36) * 3_600_000;
-  const report: SendReport = { checked: 0, sent: [], skipped: [], failed: [] };
-
-  const recent: Quote[] = [];
-  for (let page = 1; page <= 10; page++) {
-    const res = await vsco<Collection<Quote>>(
-      `/quote?page=${page}&pageSize=50&sortBy=${encodeURIComponent("created desc")}`,
-    );
-    const inWindow = res.items.filter((q) => Date.parse(q.created) >= cutoff);
-    recent.push(...inWindow);
-    if (inWindow.length < res.items.length) break;
-    if (!res.meta?.totalPages || page >= res.meta.totalPages) break;
-  }
-
-  for (const quote of recent) {
-    // Skip anything already emailed, booked or closed before looking up the job.
-    if (quote.status !== "open") continue;
-    if (quote.recipients?.some((r) => r.lastSent)) continue;
-    report.checked++;
-
-    let job: Job;
-    try {
-      job = await vsco<Job>(`/job/${quote.jobId}`);
-    } catch (err) {
-      report.failed.push({ quoteId: quote.id, error: errorText(err) });
-      continue;
-    }
-    if (!isExpoJob(job)) continue;
-    if (job.closed) {
-      report.skipped.push({ quoteId: quote.id, reason: "job closed" });
-      continue;
-    }
-
-    try {
-      const result = await sendQuoteToClients(job.id, quote.id, opts.dryRun);
-      if (result === "no-email") {
-        report.skipped.push({ quoteId: quote.id, reason: "no client email" });
-        continue;
-      }
-      report.sent.push({ quoteId: quote.id, jobId: job.id });
-    } catch (err) {
-      report.failed.push({ quoteId: quote.id, error: errorText(err) });
-    }
-  }
-
-  return report;
+  return "done";
 }

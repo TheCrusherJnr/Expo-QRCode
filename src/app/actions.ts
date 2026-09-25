@@ -7,7 +7,7 @@ import { inquirySchema, type InquiryInput } from "@/lib/schema";
 import {
   createWeddingLead,
   getPackages,
-  sendQuoteToClients,
+  emailQuoteToClients,
   VscoApiError,
 } from "@/lib/vsco";
 
@@ -86,18 +86,23 @@ export async function submitInquiry(input: InquiryInput): Promise<SubmitResult> 
 
     console.info("[inquiry] created", lead);
 
-    if (config.sendImmediately && lead.quoteId) {
+    if (lead.quoteId) {
       try {
-        const result = await sendQuoteToClients(lead.jobId, lead.quoteId);
-        console.info("[inquiry] quote email", result);
+        const result = await emailQuoteToClients(
+          lead.jobId,
+          lead.quoteId,
+          config.quoteEmailMode,
+        );
+        console.info(`[inquiry] quote email ${config.quoteEmailMode}`, result);
       } catch (err) {
-        // Not fatal: the nightly run will retry anything that didn't send.
+        // Not fatal: the lead and quote exist, so the email can be sent from VSCO by hand.
         console.error(
-          "[inquiry] immediate quote email failed",
+          "[inquiry] quote email failed",
           err instanceof VscoApiError ? { status: err.status, body: err.body } : err,
         );
       }
     }
+
     return { ok: true, firstName: data.firstName, packageName: pkg.name };
   } catch (err) {
     console.error(

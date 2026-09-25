@@ -42,14 +42,12 @@ export function InquiryForm({
   showPrices,
   currency,
   filmsUrl,
-  sendImmediately,
 }: {
   packages: PackageOption[];
   defaultPackageId?: string;
   showPrices: boolean;
   currency: string;
   filmsUrl: string;
-  sendImmediately: boolean;
 }) {
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState<{ firstName: string } | null>(null);
@@ -107,9 +105,8 @@ export function InquiryForm({
             You&apos;re all set, {done.firstName}!
           </h2>
           <p className="text-base text-muted-foreground text-pretty">
-            {sendImmediately
-              ? "Keep an eye on your inbox. We'll email you a link to your package and next steps in the next few minutes."
-              : "Keep an eye on your inbox tonight. We'll email you a link to your package and next steps."}
+            Keep an eye on your inbox. We&apos;ll email you the booking form for
+            your package shortly.
           </p>
           <Button
             render={<a href={filmsUrl} target="_blank" rel="noopener" />}
@@ -214,7 +211,7 @@ export function InquiryForm({
                   {...register("email")}
                 />
                 <FieldDescription>
-                  We&apos;ll email your package details here{sendImmediately ? "" : " tonight"}.
+                  We&apos;ll email your booking form here.
                 </FieldDescription>
                 <FieldError errors={[errors.email]} />
               </Field>

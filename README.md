@@ -9,10 +9,10 @@ When they submit:
 2. **Quote attached.** The package options come from a template quote in VSCO
    (`VSCO_TEMPLATE_QUOTE_IDS`). The couple's quote is a copy of the option they
    picked, with your intro text, line items, prices and optional extras.
-3. **Quote emailed that night through VSCO.** A nightly job at 8pm Brisbane time
-   sends each new expo quote with your Quote Invite email template, from the
-   mailbox connected to VSCO. Sends show up in the job's mail history. VSCO blocks
-   a second send, so a quote is never emailed twice.
+3. **Quote email drafted in VSCO.** A draft addressed to the couple is saved on
+   the job, using your default "Quote Invitation" email template and your connected
+   mailbox. You review it in VSCO and press send. Set `QUOTE_EMAIL_MODE=send` to
+   email couples straight away instead.
 
 ## Setup
 
@@ -23,17 +23,8 @@ npm run vsco:setup             # lists brands, job types, lead sources, event ty
 npm run dev
 ```
 
-Before the nightly email can send, set a sender for the brand in VSCO under
-**Settings › Mail Settings › Default From Addresses**. Without it, VSCO returns
-"No active mail sender is configured for this studio/brand."
-
-To see what tonight's run would send without sending anything:
-
-```bash
-curl -H "Authorization: Bearer $CRON_SECRET" "http://localhost:3000/api/cron/send-quotes?dryRun=1"
-```
-
-Leave out `?dryRun=1` to send for real.
+Your brand needs a sender under **Settings › Mail Settings › Default From Addresses**,
+otherwise VSCO can't create the email.
 
 ## Changing packages
 
@@ -49,6 +40,4 @@ codes point at your real domain.
 
 ## Deploy
 
-Deploy to Vercel and add every variable from `.env.local` in the project
-settings, including `CRON_SECRET`. `vercel.json` schedules the nightly send at
-10:00 UTC, which is 8pm in Brisbane.
+Deploy to Vercel and add every variable from `.env.local` in the project settings.
