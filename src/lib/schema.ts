@@ -32,8 +32,6 @@ export const inquirySchema = z.object({
     }, "Wedding date should be in the future"),
   packageId: z.string().min(1, "Please choose a package"),
   notes: z.string().trim().max(2000),
-  // Honeypot. Real people never see or fill this in.
-  company: z.string(),
 });
 
 export type InquiryInput = z.infer<typeof inquirySchema>;

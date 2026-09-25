@@ -40,11 +40,6 @@ export async function submitInquiry(input: InquiryInput): Promise<SubmitResult> 
   }
   const data = parsed.data;
 
-  // Honeypot filled in: pretend it worked so bots learn nothing.
-  if (data.company) {
-    return { ok: true, firstName: data.firstName, packageName: "" };
-  }
-
   const phone = parsePhoneNumberFromString(
     data.phone,
     config.defaultCountry as CountryCode,

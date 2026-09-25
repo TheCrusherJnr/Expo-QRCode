@@ -65,7 +65,6 @@ export function InquiryForm({
       weddingDate: "",
       packageId: defaultPackageId ?? (packages.length === 1 ? packages[0].id : ""),
       notes: "",
-      company: "",
     },
   });
   const { register, handleSubmit, formState, setError, control } = form;
@@ -325,11 +324,6 @@ export function InquiryForm({
         </CardContent>
       </Card>
 
-      {/* Honeypot field, hidden from people and assistive tech. */}
-      <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
-        <label htmlFor="company">Company</label>
-        <input id="company" tabIndex={-1} autoComplete="off" {...register("company")} />
-      </div>
 
       <Button
         type="submit"
