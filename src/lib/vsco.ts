@@ -144,9 +144,13 @@ export async function getPackages(): Promise<Package[]> {
       const inclusions = required.flatMap((i) =>
         i.children?.length ? i.children.map((c) => c.name) : [i.name],
       );
-      const extras = o.lineItems
-        .filter((i) => i.selectability === "optional")
-        .map((i) => i.name);
+      const extras = [
+        ...new Set(
+          o.lineItems
+            .filter((i) => i.selectability === "optional")
+            .map((i) => i.name),
+        ),
+      ];
       return {
         id: o.id,
         name: o.name || q.name || "Package",
@@ -156,6 +160,13 @@ export async function getPackages(): Promise<Package[]> {
       };
     }),
   );
+}
+
+/** YYYY-MM-DD three months from today. */
+function threeMonthsFromToday(): string {
+  const d = new Date();
+  d.setUTCMonth(d.getUTCMonth() + 3);
+  return d.toISOString().slice(0, 10);
 }
 
 /** Deep-copies a line item, keeping only writable fields. */
@@ -297,6 +308,8 @@ export async function createWeddingLead(input: {
         kind: "simple",
         name: template.name ? `${packageName} | ${template.name}` : packageName,
         introduction: template.introduction,
+        // VSCO ignores relative periods on create, so send the exact date.
+        expiration: { date: threeMonthsFromToday() },
         options: [
           {
             name: packageName,

@@ -75,7 +75,6 @@ export async function submitInquiry(input: InquiryInput): Promise<SubmitResult> 
       },
       weddingDate: data.weddingDate,
       packageId: pkg.id,
-      notes: data.notes,
       siteUrl: await siteUrl(),
     });
 

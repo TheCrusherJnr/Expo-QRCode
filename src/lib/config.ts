@@ -40,6 +40,8 @@ export const config = {
   quoteEmailMode: (optional("QUOTE_EMAIL_MODE", "draft") === "send" ? "send" : "draft") as
     | "draft"
     | "send",
+  // Name shown on the form when there's only one package.
+  packageName: optional("PACKAGE_NAME", "Expo Promo"),
   defaultCountry: optional("DEFAULT_PHONE_COUNTRY", "AU").toUpperCase(),
   currency: optional("CURRENCY", "AUD"),
   showPrices: optional("SHOW_PRICES", "true") === "true",

@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
 
 type PackageOption = {
   id: string;
@@ -64,7 +63,6 @@ export function InquiryForm({
       phone: "",
       weddingDate: "",
       packageId: defaultPackageId ?? (packages.length === 1 ? packages[0].id : ""),
-      notes: "",
     },
   });
   const { register, handleSubmit, formState, setError, control } = form;
@@ -104,18 +102,8 @@ export function InquiryForm({
             You&apos;re all set, {done.firstName}!
           </h2>
           <p className="text-base text-muted-foreground text-pretty">
-            Keep an eye on your inbox. We&apos;ll email you the booking form for
-            your package shortly.
+            I&apos;ll email you the booking form as soon as I can.
           </p>
-          <Button
-            render={<a href={filmsUrl} target="_blank" rel="noopener" />}
-            nativeButton={false}
-            variant="outline"
-            className="mt-3 h-12 w-full rounded-xl text-base"
-          >
-            Watch our films while you wait
-            <ArrowUpRightIcon data-icon="inline-end" aria-hidden />
-          </Button>
         </CardContent>
       </Card>
     );
@@ -306,25 +294,6 @@ export function InquiryForm({
         </CardContent>
       </Card>
 
-      <Card className="rounded-2xl">
-        <CardContent>
-          <Field data-invalid={!!errors.notes}>
-            <FieldLabel htmlFor="notes">
-              Anything else? <span className="font-normal text-muted-foreground">(optional)</span>
-            </FieldLabel>
-            <Textarea
-              id="notes"
-              rows={3}
-              placeholder="Venue, guest count, anything you'd love filmed…"
-              className="min-h-24 rounded-xl px-3.5 py-3 text-base md:text-base"
-              {...register("notes")}
-            />
-            <FieldError errors={[errors.notes]} />
-          </Field>
-        </CardContent>
-      </Card>
-
-
       <Button
         type="submit"
         size="lg"
@@ -343,6 +312,26 @@ export function InquiryForm({
       <p className="-mt-2 text-center text-xs text-muted-foreground">
         By submitting you agree to be contacted about your wedding.
       </p>
+
+      <a
+        href={filmsUrl}
+        target="_blank"
+        rel="noopener"
+        className="group mt-2 flex items-center justify-between gap-4 rounded-2xl border border-gold/60 bg-card px-5 py-4 transition-colors active:bg-accent"
+      >
+        <span>
+          <span className="block font-heading text-xl font-semibold">
+            View more of our work
+          </span>
+          <span className="block text-sm text-muted-foreground">
+            Films, packages and the team behind the camera
+          </span>
+        </span>
+        <ArrowUpRightIcon
+          className="size-5 shrink-0 text-gold-deep transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+          aria-hidden
+        />
+      </a>
     </form>
   );
 }

@@ -31,7 +31,6 @@ export const inquirySchema = z.object({
       return d >= y.toISOString().slice(0, 10);
     }, "Wedding date should be in the future"),
   packageId: z.string().min(1, "Please choose a package"),
-  notes: z.string().trim().max(2000),
 });
 
 export type InquiryInput = z.infer<typeof inquirySchema>;

@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { ArrowUpRightIcon } from "lucide-react";
 import { InquiryForm } from "@/components/inquiry-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { config } from "@/lib/config";
@@ -17,6 +16,10 @@ export default async function Home({
   let loadError = false;
   try {
     packages = await getPackages();
+    // A single package is shown under your chosen name (PACKAGE_NAME, default "Expo Promo").
+    if (packages.length === 1 && config.packageName) {
+      packages = [{ ...packages[0], name: config.packageName }];
+    }
   } catch (err) {
     console.error("[home] failed to load packages", err);
     loadError = true;
@@ -60,32 +63,6 @@ export default async function Home({
           filmsUrl={config.filmsUrl}
         />
       )}
-
-      <a
-        href={config.filmsUrl}
-        target="_blank"
-        rel="noopener"
-        className="group mt-8 flex items-center justify-between gap-4 rounded-2xl border border-gold/60 bg-card px-5 py-4 transition-colors active:bg-accent"
-      >
-        <span>
-          <span className="block font-heading text-xl font-semibold">
-            View more of our work
-          </span>
-          <span className="block text-sm text-muted-foreground">
-            Films, packages and the team behind the camera
-          </span>
-        </span>
-        <ArrowUpRightIcon
-          className="size-5 shrink-0 text-gold-deep transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-          aria-hidden
-        />
-      </a>
-
-      <footer className="mt-6 text-center text-xs text-muted-foreground">
-        <a href={config.websiteUrl} target="_blank" rel="noopener" className="underline-offset-4 hover:underline">
-          {new URL(config.websiteUrl).host.replace(/^www\./, "")}
-        </a>
-      </footer>
     </main>
   );
 }
