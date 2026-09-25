@@ -272,11 +272,6 @@ export function InquiryForm({
                               ))}
                             </ul>
                           ) : null}
-                          {pkg.extras.length ? (
-                            <FieldDescription className="mt-2 text-xs">
-                              Optional extras: {pkg.extras.join(", ")}
-                            </FieldDescription>
-                          ) : null}
                         </FieldContent>
                         <RadioGroupItem
                           value={pkg.id}
