@@ -27,6 +27,10 @@ export const config = {
     leadStatusId: optional("VSCO_LEAD_STATUS_ID") || null,
     brandId: optional("VSCO_BRAND_ID") || null,
     weddingEventTypeId: optional("VSCO_WEDDING_EVENT_TYPE_ID") || null,
+    // true: the app copies the chosen package into a quote and drafts the email.
+    // false: the app only creates the lead; a VSCO automation adds your quote
+    // template (contract, payment schedule) and drafts the email.
+    createQuote: optional("VSCO_CREATE_QUOTE", "true") === "true",
     // Optional: a specific VSCO email template for the quote email (ULID).
     quoteEmailTemplateId: optional("VSCO_QUOTE_EMAIL_TEMPLATE_ID") || null,
   },

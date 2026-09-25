@@ -284,6 +284,12 @@ export async function createWeddingLead(input: {
   let clientUrl: string | null = null;
   let quoteError: string | null = null;
 
+  // With VSCO_CREATE_QUOTE=false, a VSCO automation adds your quote template
+  // (with its contract and payment schedule) instead of the app.
+  if (!config.vsco.createQuote) {
+    return { jobId, managerUrl, quoteId, clientUrl, quoteError };
+  }
+
   try {
     const quote = await vsco<Quote>(`/job/${jobId}/quote`, {
       method: "POST",
